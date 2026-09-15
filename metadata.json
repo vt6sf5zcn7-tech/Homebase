@@ -1,0 +1,6 @@
+{
+  "name": "Homebase",
+  "description": "High school schedule companion with verified letter day tracking for Schreiber High (11050), multi-day sceduals, AI photo schedule scanner, Messages sharing, school ID & Chromebook notifications, and task to-do list designed for iPhones.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
