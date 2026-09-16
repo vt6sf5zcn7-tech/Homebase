@@ -35,6 +35,7 @@ import {
   offsetDateStr,
   formatFriendlyDate,
 } from '../services/letterDayEngine';
+import { getSubjectEmoji } from '../utils/subjectEmoji';
 
 interface HomepageViewProps {
   currentLetterDay: LetterDay | null;
@@ -411,13 +412,16 @@ export const HomepageView: React.FC<HomepageViewProps> = ({
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black shrink-0 ${
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 relative ${
                         isNow
-                          ? 'bg-indigo-600 text-white shadow-md'
+                          ? 'bg-indigo-600/90 text-white shadow-md border border-indigo-400/50'
                           : 'bg-slate-800/90 border border-slate-700 text-slate-300'
                       }`}
                     >
-                      P{period.periodNumber}
+                      <span>{period.emoji || getSubjectEmoji(period.name, period.isStudyHall)}</span>
+                      <span className="absolute -bottom-1 -right-1 text-[9px] font-mono px-1 rounded bg-slate-900 border border-slate-700 text-slate-400 font-bold leading-tight">
+                        P{period.periodNumber}
+                      </span>
                     </div>
 
                     <div className="min-w-0">

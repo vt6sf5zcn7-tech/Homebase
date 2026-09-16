@@ -36,6 +36,8 @@ export const SCHREIBER_PERIODS: SchoolPeriod[] = [
     id: 'p1',
     periodNumber: 1,
     name: 'AP Chemistry',
+    emoji: '🧪',
+    subjectCategory: 'Science',
     room: 'Sci-304',
     teacher: 'Dr. Evelyn Martinez',
     color: '#3B82F6', // Blue
@@ -48,6 +50,8 @@ export const SCHREIBER_PERIODS: SchoolPeriod[] = [
     id: 'p2',
     periodNumber: 2,
     name: 'Homeroom & AP US History',
+    emoji: '🏛️',
+    subjectCategory: 'Social Studies',
     room: 'Hum-108',
     teacher: 'Ms. Rebecca Ross',
     color: '#F59E0B', // Amber
@@ -60,6 +64,8 @@ export const SCHREIBER_PERIODS: SchoolPeriod[] = [
     id: 'p3',
     periodNumber: 3,
     name: 'Honors Pre-Calculus',
+    emoji: '📐',
+    subjectCategory: 'Math',
     room: 'Math-210',
     teacher: 'Mr. David Larson',
     color: '#8B5CF6', // Purple
@@ -72,6 +78,8 @@ export const SCHREIBER_PERIODS: SchoolPeriod[] = [
     id: 'p4',
     periodNumber: 4,
     name: 'Spanish III Honors',
+    emoji: '🇪🇸',
+    subjectCategory: 'World Language',
     room: 'ModLang-202',
     teacher: 'Sra. Elena Gomez',
     color: '#06B6D4', // Cyan
@@ -84,6 +92,8 @@ export const SCHREIBER_PERIODS: SchoolPeriod[] = [
     id: 'p5',
     periodNumber: 5,
     name: 'Period 5 Study Hall (Free Period)',
+    emoji: '📖',
+    subjectCategory: 'Study Hall',
     room: 'Library Media Ctr',
     teacher: 'Mr. Henderson',
     color: '#10B981', // Emerald
@@ -97,6 +107,8 @@ export const SCHREIBER_PERIODS: SchoolPeriod[] = [
     id: 'p6',
     periodNumber: 6,
     name: 'Lunch & Student Commons',
+    emoji: '🥪',
+    subjectCategory: 'Lunch',
     room: 'Cafeteria Commons',
     teacher: 'Faculty Supervision',
     color: '#64748B', // Slate
@@ -109,6 +121,8 @@ export const SCHREIBER_PERIODS: SchoolPeriod[] = [
     id: 'p7',
     periodNumber: 7,
     name: 'AP English Literature',
+    emoji: '📚',
+    subjectCategory: 'English',
     room: 'Lang-115',
     teacher: 'Mrs. Cynthia Howard',
     color: '#EC4899', // Pink
@@ -121,6 +135,8 @@ export const SCHREIBER_PERIODS: SchoolPeriod[] = [
     id: 'p8',
     periodNumber: 8,
     name: 'Intro to Engineering & CAD',
+    emoji: '⚙️',
+    subjectCategory: 'Technology',
     room: 'Tech-101',
     teacher: 'Mr. Robert Alvarez',
     color: '#F97316', // Orange
@@ -133,6 +149,8 @@ export const SCHREIBER_PERIODS: SchoolPeriod[] = [
     id: 'p9',
     periodNumber: 9,
     name: 'Extra Help & Advisory / Clubs',
+    emoji: '🧭',
+    subjectCategory: 'Advisory',
     room: 'Campus Center',
     teacher: 'Academic Faculty',
     color: '#6366F1', // Indigo

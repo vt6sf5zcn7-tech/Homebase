@@ -14,6 +14,7 @@ import {
   Camera,
 } from 'lucide-react';
 import { SchoolPeriod, LetterDay, CalendarEvent } from '../types';
+import { getSubjectEmoji } from '../utils/subjectEmoji';
 
 interface TodayScheduleViewProps {
   currentLetterDay: LetterDay | null;
@@ -108,8 +109,9 @@ export const TodayScheduleView: React.FC<TodayScheduleViewProps> = ({
                     <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">
                       Period {currentActivePeriod.periodNumber} • In Progress
                     </span>
-                    <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-white mt-0.5">
-                      {currentActivePeriod.name}
+                    <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-white mt-0.5 flex items-center gap-2.5">
+                      <span className="text-3xl">{currentActivePeriod.emoji || getSubjectEmoji(currentActivePeriod.name, currentActivePeriod.isStudyHall)}</span>
+                      <span>{currentActivePeriod.name}</span>
                     </h3>
                   </div>
 
@@ -191,8 +193,9 @@ export const TodayScheduleView: React.FC<TodayScheduleViewProps> = ({
 
               {nextUpcomingPeriod ? (
                 <div>
-                  <h4 className="text-lg font-bold text-white leading-snug">
-                    {nextUpcomingPeriod.name}
+                  <h4 className="text-lg font-bold text-white leading-snug flex items-center gap-2">
+                    <span className="text-2xl">{nextUpcomingPeriod.emoji || getSubjectEmoji(nextUpcomingPeriod.name, nextUpcomingPeriod.isStudyHall)}</span>
+                    <span>{nextUpcomingPeriod.name}</span>
                   </h4>
                   <p className="text-xs text-slate-400 mt-1">
                     Period {nextUpcomingPeriod.periodNumber} • {nextUpcomingPeriod.startTime} - {nextUpcomingPeriod.endTime}
@@ -291,10 +294,16 @@ export const TodayScheduleView: React.FC<TodayScheduleViewProps> = ({
                 >
                   <div className="flex items-start sm:items-center gap-3">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-xs shrink-0 shadow-xs"
-                      style={{ backgroundColor: period.color }}
+                      className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 shadow-xs relative"
+                      style={{ backgroundColor: period.color + '25', border: `1px solid ${period.color}60` }}
                     >
-                      P{period.periodNumber}
+                      <span>{period.emoji || getSubjectEmoji(period.name, period.isStudyHall)}</span>
+                      <span
+                        className="absolute -bottom-1 -right-1 text-[9px] font-bold px-1 rounded text-white shadow-xs leading-tight"
+                        style={{ backgroundColor: period.color }}
+                      >
+                        P{period.periodNumber}
+                      </span>
                     </div>
 
                     <div>

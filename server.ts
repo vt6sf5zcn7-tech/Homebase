@@ -40,6 +40,41 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Helper: Fallback Bell Schedule times (Schreiber High School official 9-period bell schedule)
+const STANDARD_BELL_TIMES = [
+  { period: 1, start: "08:05", end: "08:51" },
+  { period: 2, start: "08:55", end: "09:45" }, // Includes homeroom / announcements
+  { period: 3, start: "09:49", end: "10:35" },
+  { period: 4, start: "10:39", end: "11:25" },
+  { period: 5, start: "11:29", end: "12:15" },
+  { period: 6, start: "12:19", end: "13:05" },
+  { period: 7, start: "13:09", end: "13:55" },
+  { period: 8, start: "13:59", end: "14:45" },
+  { period: 9, start: "14:49", end: "15:05" },
+];
+
+function inferDefaultEmoji(name: string, isStudyHall?: boolean): string {
+  const lower = (name || "").toLowerCase();
+  if (isStudyHall || lower.includes("study") || lower.includes("free") || lower.includes("library")) return "📖";
+  if (lower.includes("lunch") || lower.includes("cafeteria")) return "🥪";
+  if (lower.includes("chem") || lower.includes("bio") || lower.includes("physic") || lower.includes("sci")) return "🧪";
+  if (lower.includes("geom") || lower.includes("calc") || lower.includes("algeb") || lower.includes("math") || lower.includes("stat")) return "📐";
+  if (lower.includes("lit") || lower.includes("english") || lower.includes("writ")) return "📚";
+  if (lower.includes("hist") || lower.includes("gov") || lower.includes("econ") || lower.includes("psych") || lower.includes("civic")) return "🏛️";
+  if (lower.includes("span") || lower.includes("español")) return "🇪🇸";
+  if (lower.includes("french")) return "🇫🇷";
+  if (lower.includes("ital")) return "🇮🇹";
+  if (lower.includes("mandarin") || lower.includes("chinese")) return "🇨🇳";
+  if (lower.includes("latin") || lower.includes("german") || lower.includes("lang")) return "🌍";
+  if (lower.includes("robot") || lower.includes("cad") || lower.includes("comp") || lower.includes("code") || lower.includes("cs")) return "💻";
+  if (lower.includes("art") || lower.includes("draw") || lower.includes("paint") || lower.includes("ceramic")) return "🎨";
+  if (lower.includes("band") || lower.includes("orchestra") || lower.includes("choir") || lower.includes("music")) return "🎵";
+  if (lower.includes("gym") || lower.includes("pe") || lower.includes("phys") || lower.includes("sport") || lower.includes("athletic")) return "🏃";
+  if (lower.includes("health")) return "🩺";
+  if (lower.includes("homeroom") || lower.includes("advisory")) return "🧭";
+  return "📘";
+}
+
 // API: Parse Schedule from Photo / Image
 app.post("/api/gemini/parse-schedule-photo", async (req, res) => {
   try {
@@ -53,24 +88,39 @@ app.post("/api/gemini/parse-schedule-photo", async (req, res) => {
     const cleanMimeType = mimeType || "image/jpeg";
 
     const ai = getGeminiClient();
-    const prompt = `You are an expert high school schedule scanner, OCR parser, and student academic assistant.
-A student has uploaded a photo or screenshot of their high school class schedule (could be a printed bell schedule paper, or a mobile portal screenshot like Genesis, PowerSchool, Infinite Campus, or Google Classroom).
-School Context: "${schoolName || 'High School'}"
+    const prompt = `You are an elite student schedule OCR scanner and visual analyzer.
+A high school student has uploaded a photo or screenshot of their high school class schedule (could be a paper printout, phone photo, or portal screenshot from Genesis, PowerSchool, Infinite Campus, StudentVUE, or Google Classroom).
+School Context: "${schoolName || 'Paul D. Schreiber High School'}"
 
-Analyze the image carefully.
-Extract all class periods in order (Period 1, Period 2, etc.).
-For each period found:
-1. periodNumber: number (1, 2, 3, 4, 5, 6, 7, 8, 9...)
-2. name: course or class title (e.g. "AP Chemistry", "Honors Pre-Calculus", "AP US History", "Spanish III", "Lunch", "Study Hall", "Physical Education", "English 11", "Robotics")
-3. room: room number or location (e.g. "Sci-304", "Math-210", "Gym", "Cafeteria", "Room 115", or "Room --" if not visible)
-4. teacher: teacher or instructor's name (e.g. "Dr. Martinez", "Ms. Ross", "Larson", or "Faculty" if not visible)
-5. startTime: formatted as "HH:MM" in 24-hour time (e.g. "08:05", "08:55", "09:49", "10:39", "11:29", "12:19", "13:09", "13:59", "14:49")
-6. endTime: formatted as "HH:MM" (e.g. "08:51", "09:45", "10:35", "11:25", "12:15", "13:05", "13:55", "14:45", "15:05")
-7. daysActive: array of letter days this class meets (e.g. ["A", "B", "C", "D", "E", "F"] if daily, or specific days if indicated on the rotation like ["A", "B", "C", "D", "E"]). If unclear, default to all letters ["A", "B", "C", "D", "E", "F"].
-8. isStudyHall: boolean (true for lunch, study hall, free period, commons, advisory)
-9. color: modern hex color for the class card (e.g. #3B82F6 blue, #8B5CF6 purple, #10B981 emerald, #F59E0B amber, #06B6D4 cyan, #EC4899 pink, #F97316 orange)
+Analyze the image with high precision:
+1. Identify all class periods in sequence (e.g. Period 1 through Period 9).
+2. For each period, accurately detect:
+   - periodNumber: integer (1, 2, 3, 4, 5, 6, 7, 8, 9...)
+   - name: full course or class title (e.g. "AP Chemistry", "Honors Pre-Calculus", "AP US History", "Spanish III", "Lunch", "Study Hall", "Physical Education", "English 11", "Intro to Engineering")
+   - emoji: vibrant, cool emoji matching the subject. Examples:
+     * 🧪 for Chemistry, Biology, Physics, Science Lab
+     * 📐 for Calculus, Algebra, Geometry, Statistics, Math
+     * 📚 for English, Literature, Writing, AP Lit
+     * 🏛️ for US History, World History, AP Gov, Economics, Social Studies
+     * 🇪🇸 / 🇫🇷 / 🇮🇹 / 🇨🇳 / 🌍 for World Languages (Spanish, French, Italian, Chinese, etc.)
+     * 💻 / 🤖 / ⚙️ for Computer Science, Robotics, Engineering, CAD
+     * 🎨 / 📸 / 🏺 for Studio Art, Photography, Ceramics
+     * 🎵 / 🎻 / 🎤 for Band, Orchestra, Choir, Music
+     * 🏃 / 🏀 / 🩺 for Gym, Physical Education, Sports, Health
+     * 🥪 for Lunch, Cafeteria, Student Commons
+     * 📖 for Study Hall, Library, Free Period
+     * 🧭 for Homeroom, Advisory, Guidance
+     * ⚡ / 💼 for Business, Electives, Seminar
+   - subjectCategory: one of ["Science", "Math", "English", "Social Studies", "World Language", "Technology", "Arts & Music", "PE & Health", "Lunch", "Study Hall", "Elective"]
+   - room: room code or location (e.g. "Sci-304", "Math-210", "Gym", "Cafeteria", "Room 115", or "Room --")
+   - teacher: instructor's name (e.g. "Dr. Martinez", "Ms. Ross", "Larson", or "Staff")
+   - startTime: 24-hour "HH:MM" (e.g. "08:05", "08:55", "09:49", "10:39", "11:29", "12:19", "13:09", "13:59", "14:49"). If not printed, infer from standard high school 9-period bell schedule.
+   - endTime: 24-hour "HH:MM" (e.g. "08:51", "09:45", "10:35", "11:25", "12:15", "13:05", "13:55", "14:45", "15:05").
+   - daysActive: array of letter days (e.g. ["A", "B", "C", "D", "E", "F"] for daily, or specific rotation days like ["A", "C", "E"] or ["B", "D", "F"] if alternate day). If not specified, default to all letters ["A", "B", "C", "D", "E", "F"].
+   - isStudyHall: boolean (true for lunch, study hall, free period, commons, advisory, resource room)
+   - color: modern hex color for card styling (e.g. #3B82F6 blue, #8B5CF6 purple, #10B981 emerald, #F59E0B amber, #06B6D4 cyan, #EC4899 pink, #F97316 orange)
 
-Return structured JSON.`;
+Return pure JSON matching the schema.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-3.8-flash",
@@ -100,6 +150,8 @@ Return structured JSON.`;
                 properties: {
                   periodNumber: { type: Type.INTEGER },
                   name: { type: Type.STRING },
+                  emoji: { type: Type.STRING },
+                  subjectCategory: { type: Type.STRING },
                   room: { type: Type.STRING },
                   teacher: { type: Type.STRING },
                   startTime: { type: Type.STRING },
@@ -129,11 +181,122 @@ Return structured JSON.`;
     });
 
     const parsed = JSON.parse(response.text || "{}");
+
+    // Post-process periods to guarantee emojis & standard times if missing
+    if (parsed.periods && Array.isArray(parsed.periods)) {
+      parsed.periods = parsed.periods.map((p: any, idx: number) => {
+        const bell = STANDARD_BELL_TIMES[idx] || { start: "08:00", end: "08:50" };
+        const emoji = p.emoji || inferDefaultEmoji(p.name, p.isStudyHall);
+        return {
+          ...p,
+          emoji,
+          periodNumber: p.periodNumber || idx + 1,
+          startTime: p.startTime || bell.start,
+          endTime: p.endTime || bell.end,
+          daysActive: (p.daysActive && p.daysActive.length > 0) ? p.daysActive : ["A", "B", "C", "D", "E", "F"],
+        };
+      });
+    }
+
     return res.json(parsed);
   } catch (error: any) {
     console.error("Parse schedule photo error:", error);
     return res.status(500).json({
       error: error?.message || "Failed to parse schedule photo.",
+    });
+  }
+});
+
+// API: Parse Schedule from Raw Text / Pasted Schedule
+app.post("/api/gemini/parse-schedule-text", async (req, res) => {
+  try {
+    const { scheduleText, schoolName } = req.body;
+    if (!scheduleText || !scheduleText.trim()) {
+      return res.status(400).json({ error: "Schedule text is required." });
+    }
+
+    const ai = getGeminiClient();
+    const prompt = `You are an expert high school student schedule parser.
+The student has pasted raw schedule text copied from their school portal (Genesis, PowerSchool, Infinite Campus, or email):
+"${scheduleText}"
+
+School Context: "${schoolName || 'Paul D. Schreiber High School'}"
+
+Extract all class periods in order. For each period:
+- periodNumber: integer
+- name: class name
+- emoji: fitting subject emoji (🧪 Science, 📐 Math, 📚 English, 🏛️ History, 🇪🇸/🇫🇷/🌍 Languages, 💻 Tech, 🎨 Arts, 🎵 Music, 🏃 PE/Gym, 🥪 Lunch, 📖 Study Hall, 🧭 Advisory)
+- subjectCategory: category string
+- room: room number or "Room --"
+- teacher: teacher name or "Staff"
+- startTime: 24-hour "HH:MM" (or default to Schreiber 9-period bell schedule)
+- endTime: 24-hour "HH:MM"
+- daysActive: array of letter days (A-F)
+- isStudyHall: boolean
+- color: hex color
+
+Return structured JSON.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.8-flash",
+      contents: [{ text: prompt }],
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            detectedSchoolName: { type: Type.STRING },
+            confidenceNotes: { type: Type.STRING },
+            periods: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  periodNumber: { type: Type.INTEGER },
+                  name: { type: Type.STRING },
+                  emoji: { type: Type.STRING },
+                  subjectCategory: { type: Type.STRING },
+                  room: { type: Type.STRING },
+                  teacher: { type: Type.STRING },
+                  startTime: { type: Type.STRING },
+                  endTime: { type: Type.STRING },
+                  daysActive: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
+                  },
+                  isStudyHall: { type: Type.BOOLEAN },
+                  color: { type: Type.STRING },
+                },
+                required: ["periodNumber", "name", "room", "teacher", "startTime", "endTime", "daysActive"],
+              },
+            },
+          },
+          required: ["periods", "confidenceNotes"],
+        },
+      },
+    });
+
+    const parsed = JSON.parse(response.text || "{}");
+    if (parsed.periods && Array.isArray(parsed.periods)) {
+      parsed.periods = parsed.periods.map((p: any, idx: number) => {
+        const bell = STANDARD_BELL_TIMES[idx] || { start: "08:00", end: "08:50" };
+        const emoji = p.emoji || inferDefaultEmoji(p.name, p.isStudyHall);
+        return {
+          ...p,
+          emoji,
+          periodNumber: p.periodNumber || idx + 1,
+          startTime: p.startTime || bell.start,
+          endTime: p.endTime || bell.end,
+          daysActive: (p.daysActive && p.daysActive.length > 0) ? p.daysActive : ["A", "B", "C", "D", "E", "F"],
+        };
+      });
+    }
+
+    return res.json(parsed);
+  } catch (error: any) {
+    console.error("Parse schedule text error:", error);
+    return res.status(500).json({
+      error: error?.message || "Failed to parse schedule text.",
     });
   }
 });

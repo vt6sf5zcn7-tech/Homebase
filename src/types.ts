@@ -12,6 +12,8 @@ export interface SchoolPeriod {
   daysActive: LetterDay[]; // which letter days this period meets
   isStudyHall?: boolean;
   friends?: string[];
+  emoji?: string; // e.g. "🧪", "📐", "📚", "🏛️", "🎨", "🏃", "🥪", "💻", "📖"
+  subjectCategory?: string;
 }
 
 export interface OffDay {

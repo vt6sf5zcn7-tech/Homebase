@@ -107,6 +107,8 @@ export interface ParsedPeriodFromPhoto {
   daysActive: string[];
   isStudyHall?: boolean;
   color?: string;
+  emoji?: string;
+  subjectCategory?: string;
 }
 
 export interface ParseSchedulePhotoResponse {
@@ -134,3 +136,22 @@ export async function parseScheduleFromPhoto(
 
   return response.json();
 }
+
+export async function parseScheduleFromText(
+  scheduleText: string,
+  schoolName?: string
+): Promise<ParseSchedulePhotoResponse> {
+  const response = await fetch('/api/gemini/parse-schedule-text', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scheduleText, schoolName }),
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.error || `Failed to parse schedule text: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
